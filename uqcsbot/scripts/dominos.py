@@ -1,6 +1,6 @@
+from string import punctuation as punc
 from uqcsbot import bot, Command
 from bs4 import BeautifulSoup
-from string import punctuation as punc
 import requests
 import json
 
