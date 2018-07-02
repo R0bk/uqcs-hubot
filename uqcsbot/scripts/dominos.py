@@ -6,7 +6,7 @@ import string
 
 
 @bot.on_command("dominos")
-def handle_wiki(command: Command):
+def handle_dominos(command: Command):
     '''
     `!dominos [<searchtext>] [-n <number of results>]` - Returns dominos coupons.
     '''
@@ -25,8 +25,8 @@ def handle_wiki(command: Command):
 
     response = requests.get("https://www.couponese.com/store/dominos.com.au/")
     if response.status_code != requests.codes.ok:
-            bot.post_message(command.channel_id, "Problem fetching data")
-            return
+        bot.post_message(command.channel_id, "Problem fetching data")
+        return
 
     content = response.content
     soup = BeautifulSoup(content)
@@ -34,22 +34,22 @@ def handle_wiki(command: Command):
     sweet_deals = []
 
     for coupon in soup.find_all(class_='ov-coupon'):
-            code = coupon.find(class_='ov-code').strong.string
-            title = coupon.find(class_='ov-title').string
-            expiry = coupon.find(class_='ov-expiry').get_text()
-            if search_text is None:
-                    sweet_deals.append((code, expiry, title))
-            elif search_text.lower() in title.translate(str.maketrans({c: None for c in string.punctuation})).lower():
-                    sweet_deals.append((code, expiry, title))
-            
-            if len(sweet_deals) >= deal_limit:
-                    break
+        code = coupon.find(class_='ov-code').strong.string
+        title = coupon.find(class_='ov-title').string
+        expiry = coupon.find(class_='ov-expiry').get_text()
+        if search_text is None:
+            sweet_deals.append((code, expiry, title))
+        elif search_text.lower() in title.translate(str.maketrans({c: None for c in string.punctuation})).lower():
+            sweet_deals.append((code, expiry, title))
+        
+        if len(sweet_deals) >= deal_limit:
+            break
 
     if len(sweet_deals) == 0:
-            if search_text is None:
-                    bot.post_message(command.channel_id, "@rob, coupon page has changed")
-                    return
-            bot.post_message(command.channel_id, "No deals found for the search: " + search_text)
+        if search_text is None:
+            bot.post_message(command.channel_id, "@rob, coupon page has changed")
             return
+        bot.post_message(command.channel_id, "No deals found for the search: " + search_text)
+        return
 
     bot.post_message(command.channel_id, '\n'.join(['{} {} {}'.format(*deal) for deal in sweet_deals]))
