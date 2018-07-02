@@ -1,8 +1,8 @@
 from uqcsbot import bot, Command
 from bs4 import BeautifulSoup
+from string import punctuation as punc
 import requests
 import json
-import string
 
 
 @bot.on_command("dominos")
@@ -39,7 +39,7 @@ def handle_dominos(command: Command):
         expiry = coupon.find(class_='ov-expiry').get_text()
         if search_text is None:
             sweet_deals.append((code, expiry, title))
-        elif search_text.lower() in title.translate(str.maketrans({c: None for c in string.punctuation})).lower():
+        elif search_text.lower() in title.translate(str.maketrans({c: None for c in punc})).lower():
             sweet_deals.append((code, expiry, title))
         
         if len(sweet_deals) >= deal_limit:
@@ -52,4 +52,4 @@ def handle_dominos(command: Command):
         bot.post_message(command.channel_id, "No deals found for the search: " + search_text)
         return
 
-    bot.post_message(command.channel_id, '\n'.join(['{} {} {}'.format(*deal) for deal in sweet_deals]))
+    bot.post_message(command.channel_id, '\n'.join([('{} '*3).format(*sd) for sd in sweet_deals]))
