@@ -1,6 +1,6 @@
-from uqcsbot import bot, Command
-from uqcsbot.util.status_reacts import loading_status
 import requests
+from uqcsbot import bot, Command
+from uqcsbot.utils.command_utils import loading_status, UsageSyntaxException
 
 URBAN_API_ENDPOINT = 'http://api.urbandictionary.com/v0/define'
 URBAN_USER_ENDPOINT = 'https://www.urbandictionary.com/define.php'
@@ -14,8 +14,8 @@ def handle_urban(command: Command) -> None:
     """
     # Check for search phase
     if not command.has_arg():
-        bot.post_message(command.channel_id, '> Usage: `!urban <SEARCH_PHRASE>`')
-        return
+        raise UsageSyntaxException()
+
     search_term = command.arg
 
     # Attempt to get definitions from the Urban Dictionary API.
@@ -25,13 +25,14 @@ def handle_urban(command: Command) -> None:
         return
     results = http_response.json()
 
+    # Sort definitions by their number of thumbs ups.
+    sorted_defs = sorted(results['list'], key=lambda def_: def_['thumbs_up'], reverse=True)
+
     # If search phrase is not found, notify user.
-    if results['result_type'] != 'exact':
+    if len(sorted_defs) == 0:
         bot.post_message(command.channel_id, f'> No results found for {search_term}. ¯\\_(ツ)_/¯')
         return
 
-    # Get best definition (by most 'thumbs up') and construct response.
-    sorted_defs = sorted(results['list'], key=lambda def_: def_['thumbs_up'], reverse=True)
     best_def = sorted_defs[0]
     # Break example into individual lines and wrap each in it's own block quote.
     example = best_def.get('example', '').split('\r\n')
